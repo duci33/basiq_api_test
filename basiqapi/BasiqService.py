@@ -17,8 +17,9 @@ class BasiqService:
                 if connection:
                     jobs = self.get_jobs("/jobs/" + connection["id"])
                     if jobs:
-                        result = self.get_transactions(None, user["id"], None)
-                        if result:
+                        transactions = self.get_transactions(None, user["id"])
+                        if transactions:
+                            result = self.calculate_average_amount(transactions)
                             for v in result.values():
                                 print("Average spending value for '" + v["title"] + "' is " + str(round(v["avg"], 2)))
 
@@ -58,24 +59,22 @@ class BasiqService:
                 break
         return is_success
 
-    def get_transactions(self, url, user_id, result):
+    def get_transactions(self, url, user_id):
         headers = {"Authorization": "Bearer " + self.token.get_access_token()}
-        if result is None:
-            result = {}
         if url is None:
             url = "/users/" + user_id + "/transactions"
         transactions = self.api_service.get(url, headers)
         if transactions:
-            result = self.calculate_average_amount(result, transactions)
             if transactions["links"] and "next" in transactions["links"].keys():
                 next_link = transactions["links"]["next"]
                 next_link = next_link[next_link.index("users") - 1:]
-                self.get_transactions(next_link, None, result)
-        return result
+                transactions["data"] += self.get_transactions(next_link, None)
+        return transactions["data"]
 
     @staticmethod
-    def calculate_average_amount(result, transactions):
-        for t in transactions["data"]:
+    def calculate_average_amount(transactions):
+        result = {}
+        for t in transactions:
             id = t["subClass"]["code"]
             if id in result.keys():
                 result[id]["sum"] += abs(float(t["amount"]))
