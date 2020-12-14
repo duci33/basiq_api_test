@@ -69,7 +69,8 @@ class BasiqService:
                 next_link = transactions["links"]["next"]
                 next_link = next_link[next_link.index("users") - 1:]
                 transactions["data"] += self.get_transactions(next_link, None)
-        return transactions["data"]
+            return transactions["data"]
+        return None
 
     @staticmethod
     def calculate_average_amount(transactions):
