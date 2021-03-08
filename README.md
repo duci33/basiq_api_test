@@ -6,7 +6,7 @@ Using Basiq API it will calculate average spending amount per category.
 ## Set API key
 Insert your API key into config file
 
-### Run the code
+## Run the code
 ```
 python3 BasiqService.py
 ```
